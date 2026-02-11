@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { TaskService } from './task.service';
 
 @Controller('/api/task')
@@ -11,22 +11,29 @@ export class TaskController {
   }
   //!GET  http://localhost:3000/api/task/1
   @Get(':id')
-  public getTaskById(@Param('id') id: string): any {
-    return this.taskSvc.getTaskById(parseInt(id));
+  public getTaskById(@Param('id', ParseIntPipe) id: number): any {
+    const task = this.taskSvc.getTaskById(id);
+    if (task) return task;
+    throw new HttpException(
+      `Tarea con id ${id} no encontrada`,
+      HttpStatus.NOT_FOUND,
+    );
   }
   //* POST http://localhost:3000/api/task
   @Post()
-  public insertTask(task: any): any {
+  public insertTask(@Body() task: any): any {
     return this.taskSvc.insertTask(task);
   }
   //! PUT http://localhost:3000/api/task/:id
   @Put(':id')
-  public updateTask(id: number, task: any): any {
+  public updateTask(
+    @Param('id', ParseIntPipe) id: number, 
+    @Body() task: any): any {
     return this.taskSvc.updateTask(id, task);
   }
   //? DELETE http://localhost:3000/api/task/:id
   @Delete(':id')
-  public deleteTask(id: number): string {
+  public deleteTask(@Param('id', ParseIntPipe) id: number): string {
     return this.taskSvc.deleteTask(id);
   }
 }

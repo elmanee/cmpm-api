@@ -16,6 +16,8 @@ exports.TaskController = void 0;
 const common_1 = require("@nestjs/common");
 const task_service_1 = require("./task.service");
 const create_task_dto_1 = require("./dto/create-task.dto");
+const update_task_dto_1 = require("./dto/update-task.dto");
+const swagger_1 = require("@nestjs/swagger");
 let TaskController = class TaskController {
     taskSvc;
     constructor(taskSvc) {
@@ -26,12 +28,9 @@ let TaskController = class TaskController {
     }
     async getTaskById(id) {
         const task = await this.taskSvc.getTaskById(id);
-        if (task) {
+        if (task)
             return task;
-        }
-        else {
-            throw new common_1.HttpException(`Task no found`, common_1.HttpStatus.NOT_FOUND);
-        }
+        throw new common_1.HttpException('Tarea no encontrada', common_1.HttpStatus.NOT_FOUND);
     }
     async insertTask(task) {
         const newTask = await this.taskSvc.insertTask(task);
@@ -41,20 +40,19 @@ let TaskController = class TaskController {
         };
     }
     async updateTask(id, task) {
-        const updatedTask = await this.taskSvc.updateTask(id, task);
-        return {
-            success: true,
-            message: `Tarea con ID ${id} actualizada con éxito`,
-            data: updatedTask
-        };
+        return this.taskSvc.updateTask(id, task);
     }
     async deleteTask(id) {
-        return await this.taskSvc.deleteTask(id);
+        const result = await this.taskSvc.deleteTask(id);
+        if (!result)
+            throw new common_1.HttpException('No se puede eliminar la tarea', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        return result;
     }
 };
 exports.TaskController = TaskController;
 __decorate([
     (0, common_1.Get)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Obtiene todas las tareas' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -78,17 +76,19 @@ __decorate([
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:paramtypes", [Number, update_task_dto_1.UpdateTaskDto]),
     __metadata("design:returntype", Promise)
 ], TaskController.prototype, "updateTask", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], TaskController.prototype, "deleteTask", null);
 exports.TaskController = TaskController = __decorate([
+    (0, swagger_1.ApiTags)('tasks'),
     (0, common_1.Controller)('/api/task'),
     __metadata("design:paramtypes", [task_service_1.TaskService])
 ], TaskController);

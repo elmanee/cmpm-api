@@ -27,13 +27,9 @@ let TaskService = class TaskService {
         return result.rows;
     }
     async getTaskById(id) {
-        const query = `SELECT * FROM tasks WHERE id = $1`;
-        const result = await this.db.query(query, [id]);
-        console.log("Resultado de la DB:", result.rows);
-        if (result.rows.length === 0) {
-            return { statusCode: 404, message: "Task no found" };
-        }
-        return result.rows[0];
+        const query = `SELECT * FROM tasks WHERE id = '${id}'`;
+        const results = (await this.db.query(query)).rows;
+        return results[0];
     }
     async insertTask(task) {
         const query = 'INSERT INTO tasks (name, description, priority, user_id) VALUES ($1, $2, $3, $4) RETURNING id';
@@ -45,20 +41,19 @@ let TaskService = class TaskService {
         ]);
         return result.oid;
     }
-    async updateTask(id, task) {
-        const query = `UPDATE tasks SET name = COALESCE($1, name), description = COALESCE($2, description), priority = COALESCE($3, priority) WHERE id = $4 RETURNING *`;
-        const result = await this.db.query(query, [
-            task.name,
-            task.description,
-            task.priority,
-            id,
-        ]);
+    async updateTask(id, taskUpdated) {
+        const task = await this.getTaskById(id);
+        task.name = taskUpdated.name ?? task.name;
+        task.description = taskUpdated.description ?? task.description;
+        task.priority = taskUpdated.priority ?? task.priority;
+        const query = `UPDATE tasks SET name = '${task.name}', description = '${task.description}', priority = ${task.priority} WHERE id = ${id} RETURNING *`;
+        const result = await this.db.query(query);
         return result.rows[0];
     }
-    deleteTask(id) {
-        const array = this.tasks.filter((data) => data.id != id);
-        this.tasks = array;
-        return `Tarea con id ${id} eliminada`;
+    async deleteTask(id) {
+        const sql = `DELETE FROM tasks WHERE id = $1 RETURNING *`;
+        const result = await this.db.query(sql, [id]);
+        return result.rows.length > 0;
     }
 };
 exports.TaskService = TaskService;

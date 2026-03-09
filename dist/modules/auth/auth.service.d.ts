@@ -1,3 +1,6 @@
 export declare class AuthService {
-    login(): string;
+    logIn(): string;
+    register(): string;
+    refreshToken(): string;
+    logOut(): string;
 }

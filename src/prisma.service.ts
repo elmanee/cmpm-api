@@ -9,7 +9,7 @@ dotenv.config();
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor() {
     const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-    const adapter = new PrismaPg(pool);
+    const adapter = new PrismaPg(pool as any);
     super({ adapter });
   }
   async onModuleInit() {

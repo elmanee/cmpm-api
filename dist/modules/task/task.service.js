@@ -15,51 +15,45 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskService = void 0;
 const common_1 = require("@nestjs/common");
 const pg_1 = require("pg");
+const prisma_service_1 = require("../../prisma.service");
 let TaskService = class TaskService {
     db;
-    constructor(db) {
+    prisma;
+    constructor(db, prisma) {
         this.db = db;
+        this.prisma = prisma;
     }
-    tasks = [];
     async getTasks() {
-        const query = 'SELECT * FROM tasks';
-        const result = await this.db.query(query);
-        return result.rows;
+        return await this.prisma.task.findMany();
     }
     async getTaskById(id) {
-        const query = `SELECT * FROM tasks WHERE id = '${id}'`;
-        const results = (await this.db.query(query)).rows;
-        return results[0];
+        return await this.prisma.task.findUnique({
+            where: { id: id },
+        });
     }
     async insertTask(task) {
-        const query = 'INSERT INTO tasks (name, description, priority, user_id) VALUES ($1, $2, $3, $4) RETURNING id';
-        const result = await this.db.query(query, [
-            task.name,
-            task.description,
-            task.priority,
-            task.user_id,
-        ]);
-        return result.oid;
+        return await this.prisma.task.create({
+            data: task,
+        });
     }
     async updateTask(id, taskUpdated) {
-        const task = await this.getTaskById(id);
-        task.name = taskUpdated.name ?? task.name;
-        task.description = taskUpdated.description ?? task.description;
-        task.priority = taskUpdated.priority ?? task.priority;
-        const query = `UPDATE tasks SET name = '${task.name}', description = '${task.description}', priority = ${task.priority} WHERE id = ${id} RETURNING *`;
-        const result = await this.db.query(query);
-        return result.rows[0];
+        return await this.prisma.task.update({
+            where: { id: id },
+            data: taskUpdated,
+        });
     }
     async deleteTask(id) {
-        const sql = `DELETE FROM tasks WHERE id = $1 RETURNING *`;
-        const result = await this.db.query(sql, [id]);
-        return result.rows.length > 0;
+        const task = await this.prisma.task.delete({
+            where: { id: id },
+        });
+        return !!task;
     }
 };
 exports.TaskService = TaskService;
 exports.TaskService = TaskService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)('DATABASE_CONNECTION')),
-    __metadata("design:paramtypes", [pg_1.Client])
+    __metadata("design:paramtypes", [pg_1.Client,
+        prisma_service_1.PrismaService])
 ], TaskService);
 //# sourceMappingURL=task.service.js.map

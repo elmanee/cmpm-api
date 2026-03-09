@@ -10,16 +10,15 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const task_module_1 = require("./modules/task/task.module");
 const auth_module_1 = require("./modules/auth/auth.module");
-const readline_1 = require("readline");
+const user_module_1 = require("./modules/user/user.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [task_module_1.TaskModule, auth_module_1.AuthModule],
+        imports: [task_module_1.TaskModule, auth_module_1.AuthModule, user_module_1.UserModule],
         controllers: [],
         providers: [],
     })
 ], AppModule);
-readline_1.clearScreenDown;
 //# sourceMappingURL=app.module.js.map

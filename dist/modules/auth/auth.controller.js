@@ -17,17 +17,31 @@ const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const swagger_1 = require("@nestjs/swagger");
 const auth_dto_1 = require("./dto/auth.dto");
-const jwt_1 = require("@nestjs/jwt");
+const util_service_1 = require("../../common/services/util.service");
 let AuthController = class AuthController {
     authSvc;
-    jwtSvc;
-    constructor(authSvc, jwtSvc) {
+    utilSvc;
+    constructor(authSvc, utilSvc) {
         this.authSvc = authSvc;
-        this.jwtSvc = jwtSvc;
+        this.utilSvc = utilSvc;
     }
     async login(auth) {
-        const jwt = await this.jwtSvc.signAsync(auth, { secret: process.env.JWT_SECRET_KEY });
-        return jwt;
+        const { username, password } = auth;
+        const user = await this.authSvc.getUserByUsername(username);
+        if (!user) {
+            throw new Error('El usuario y/o contraseña es incorrecto');
+        }
+        if (await this.utilSvc.checkPassword(password, user.password)) {
+            const { password: _, ...payload } = user;
+            const jwt = await this.utilSvc.generarJWT(payload);
+            return { access_token: jwt, refresh_token: '' };
+        }
+        else {
+            throw new Error('El usuario y/o contraseña es incorrecto');
+        }
+    }
+    getMe() {
+        return this.authSvc.getMe();
     }
     register() {
         return this.authSvc.register();
@@ -50,6 +64,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
+    (0, common_1.Get)('me'),
+    (0, swagger_1.ApiOperation)({ summary: 'Extraer el ID del usuario desde el token y busca la información' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", String)
+], AuthController.prototype, "getMe", null);
+__decorate([
     (0, common_1.Get)('register'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
     (0, swagger_1.ApiOperation)({ summary: 'Registra un nuevo usuario' }),
@@ -60,7 +81,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('refresh'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: 'Recibe un Refresh Token, valida que no hay expirado y entrega un nuevo Access Token' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Recibe un Refresh Token y entrega un nuevo Access Token' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", String)
@@ -68,7 +89,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('logout'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
-    (0, swagger_1.ApiOperation)({ summary: 'Invalida los tokens en el lado del servidor y limpia las cookies' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Invalida los tokens y limpia las cookies' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", String)
@@ -76,6 +97,6 @@ __decorate([
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('/api/auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService,
-        jwt_1.JwtService])
+        util_service_1.UtilService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

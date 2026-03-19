@@ -14,8 +14,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskService = void 0;
 const common_1 = require("@nestjs/common");
-const pg_1 = require("pg");
 const prisma_service_1 = require("../../prisma.service");
+const pg_1 = require("pg");
 let TaskService = class TaskService {
     db;
     prisma;
@@ -23,12 +23,14 @@ let TaskService = class TaskService {
         this.db = db;
         this.prisma = prisma;
     }
-    async getTasks() {
-        return await this.prisma.task.findMany();
+    async getTasks(userId) {
+        return await this.prisma.task.findMany({
+            where: { user_id: userId },
+        });
     }
-    async getTaskById(id) {
-        return await this.prisma.task.findUnique({
-            where: { id: id },
+    async getTaskById(id, userId) {
+        return await this.prisma.task.findFirst({
+            where: { id, user_id: userId },
         });
     }
     async insertTask(task) {
@@ -36,17 +38,27 @@ let TaskService = class TaskService {
             data: task,
         });
     }
-    async updateTask(id, taskUpdated) {
+    async updateTask(id, userId, taskUpdated) {
+        const task = await this.prisma.task.findFirst({ where: { id, user_id: userId } });
+        if (!task)
+            throw new common_1.HttpException('No tienes permiso o la tarea no existe', common_1.HttpStatus.FORBIDDEN);
         return await this.prisma.task.update({
-            where: { id: id },
+            where: { id },
             data: taskUpdated,
         });
     }
-    async deleteTask(id) {
-        const task = await this.prisma.task.delete({
-            where: { id: id },
-        });
-        return !!task;
+    async deleteTask(id, userId) {
+        try {
+            const task = await this.getTaskById(id, userId);
+            if (!task)
+                throw new Error();
+            return await this.prisma.task.delete({
+                where: { id },
+            });
+        }
+        catch (e) {
+            throw new common_1.HttpException('No se pudo eliminar la tarea', common_1.HttpStatus.FORBIDDEN);
+        }
     }
 };
 exports.TaskService = TaskService;

@@ -1,14 +1,14 @@
 import { CreateTaskDto } from './dto/create-task.dto';
-import { Client } from 'pg';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PrismaService } from 'src/prisma.service';
+import { Client } from 'pg';
 export declare class TaskService {
     private db;
     private prisma;
     constructor(db: Client, prisma: PrismaService);
-    getTasks(): Promise<any[]>;
-    getTaskById(id: number): Promise<any>;
+    getTasks(userId: number): Promise<any[]>;
+    getTaskById(id: number, userId: number): Promise<any>;
     insertTask(task: CreateTaskDto): Promise<any>;
-    updateTask(id: number, taskUpdated: UpdateTaskDto): Promise<any>;
-    deleteTask(id: number): Promise<boolean>;
+    updateTask(id: number, userId: number, taskUpdated: UpdateTaskDto): Promise<any>;
+    deleteTask(id: number, userId: number): Promise<any>;
 }

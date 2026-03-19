@@ -1,23 +1,17 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  ParseIntPipe,
-  HttpException,
-  HttpStatus,
-  HttpCode,
+  Controller, Get, Post, Put, Delete,
+  Body, Param, ParseIntPipe, HttpException,
+  HttpStatus, HttpCode, Req, UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { UtilService } from 'src/common/services/util.service';
+import { AuthGuard } from 'src/common/guards/auth.guard';
 
 @ApiTags('users')
+@UseGuards(AuthGuard)
 @Controller('/api/user')
 export class UserController {
   constructor(
@@ -26,9 +20,10 @@ export class UserController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Obtiene todos los usuarios' })
-  public async getUsers(): Promise<any[]> {
-    return await this.userSvc.getUser();
+  @ApiOperation({ summary: 'Obtiene todos los usuarios excepto el actual' })
+  public async getUsers(@Req() request: any): Promise<any[]> {
+    const { id } = request['user'];
+    return await this.userSvc.getuser(id);
   }
 
   @Get(':id')

@@ -20,4 +20,9 @@ export class UtilService {
   async generarJWT(payload: any): Promise<string> {
     return jwt.sign(payload, process.env.JWT_SECRET_KEY!, { expiresIn: '60s' });
   }
+
+  getPayload(token: string): any {
+    const jwt = require('jsonwebtoken');
+    return jwt.verify(token, process.env.JWT_SECRET_KEY!);
+  }
 }

@@ -12,6 +12,7 @@ const task_service_1 = require("./task.service");
 const task_controller_1 = require("./task.controller");
 const database_provider_1 = require("../../common/providers/database.provider");
 const prisma_service_1 = require("../../prisma.service");
+const util_service_1 = require("../../common/services/util.service");
 let TaskModule = class TaskModule {
 };
 exports.TaskModule = TaskModule;
@@ -19,7 +20,7 @@ exports.TaskModule = TaskModule = __decorate([
     (0, common_1.Module)({
         imports: [],
         controllers: [task_controller_1.TaskController],
-        providers: [task_service_1.TaskService, database_provider_1.databaseProvider[0], prisma_service_1.PrismaService],
+        providers: [task_service_1.TaskService, database_provider_1.databaseProvider[0], prisma_service_1.PrismaService, util_service_1.UtilService],
     })
 ], TaskModule);
 //# sourceMappingURL=task.module.js.map

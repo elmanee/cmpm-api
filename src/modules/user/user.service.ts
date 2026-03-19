@@ -12,21 +12,24 @@ export class UserService {
     private prisma: PrismaService,
   ) {}
 
-  public async getUser(): Promise<any[]> {
+  public async getuser(id: number): Promise<any[]> {
     return await (this.prisma as any).user.findMany({
-        orderBy: { id: 'asc' },
+      orderBy: { id: 'asc' },
+      where: {
+        id: { not: id },
+      },
     });
-}
+  }
 
   public async getUserById(id: number): Promise<any> {
     return await this.prisma.user.findUnique({
-      where: { id: id },
+      where: { id },
     });
   }
 
   public async getUserByUsername(username: string): Promise<any> {
     return await (this.prisma as any).user.findFirst({
-      where: { username: username },
+      where: { username },
     });
   }
 
@@ -45,7 +48,7 @@ export class UserService {
   public async updateUser(id: number, userUpdated: UpdateUserDto): Promise<any> {
     try {
       return await this.prisma.user.update({
-        where: { id: id },
+        where: { id },
         data: userUpdated,
       });
     } catch (error) {
@@ -57,7 +60,7 @@ export class UserService {
   public async deleteUser(id: number): Promise<boolean> {
     try {
       await this.prisma.user.delete({
-        where: { id: id },
+        where: { id },
       });
       return true;
     } catch (error) {

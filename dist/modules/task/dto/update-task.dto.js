@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateTaskDto = void 0;
+const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class UpdateTaskDto {
     name;
@@ -18,6 +19,7 @@ class UpdateTaskDto {
 }
 exports.UpdateTaskDto = UpdateTaskDto;
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)({ message: 'El nombre debe ser una cadena de texto' }),
     (0, class_validator_1.MinLength)(3, {
         message: 'El nombre debe tener al menos 3 caracteres',
@@ -26,6 +28,7 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateTaskDto.prototype, "name", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)({ message: 'La descripción debe ser una cadena de texto' }),
     (0, class_validator_1.MinLength)(3, {
@@ -35,6 +38,7 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateTaskDto.prototype, "description", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)

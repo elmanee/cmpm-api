@@ -3,12 +3,13 @@ import {
   HttpException, HttpStatus, Param, ParseIntPipe,
   Post, Put, Req, UseGuards
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 
+@ApiBearerAuth()
 @ApiTags('tasks')
 @UseGuards(AuthGuard)
 @Controller('/api/task')

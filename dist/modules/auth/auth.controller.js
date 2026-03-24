@@ -18,6 +18,7 @@ const auth_service_1 = require("./auth.service");
 const swagger_1 = require("@nestjs/swagger");
 const auth_dto_1 = require("./dto/auth.dto");
 const util_service_1 = require("../../common/services/util.service");
+const auth_guard_1 = require("../../common/guards/auth.guard");
 let AuthController = class AuthController {
     authSvc;
     utilSvc;
@@ -40,8 +41,8 @@ let AuthController = class AuthController {
             throw new Error('El usuario y/o contraseña es incorrecto');
         }
     }
-    getMe() {
-        return this.authSvc.getMe();
+    async getMe(request) {
+        return request['user'];
     }
     register() {
         return this.authSvc.register();
@@ -65,10 +66,13 @@ __decorate([
 ], AuthController.prototype, "login", null);
 __decorate([
     (0, common_1.Get)('me'),
-    (0, swagger_1.ApiOperation)({ summary: 'Extraer el ID del usuario desde el token y busca la información' }),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Extrae el id del usuario desde el token y busca la información' }),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", String)
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getMe", null);
 __decorate([
     (0, common_1.Get)('register'),

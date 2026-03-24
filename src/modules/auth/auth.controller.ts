@@ -1,8 +1,9 @@
-import { Controller, Get, HttpCode, Post, HttpStatus, Body } from '@nestjs/common';
+import { Controller, Get, HttpCode, Post, HttpStatus, Body, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthDto } from './dto/auth.dto';
-import { UtilService } from '../../common/services/util.service';
+import { UtilService } from 'src/common/services/util.service';
+import { AuthGuard } from 'src/common/guards/auth.guard';
 
 @Controller('/api/auth')
 export class AuthController {
@@ -30,9 +31,11 @@ export class AuthController {
   }
 
   @Get('me')
-  @ApiOperation({ summary: 'Extraer el ID del usuario desde el token y busca la información' })
-  public getMe(): string {
-    return this.authSvc.getMe();
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Extrae el id del usuario desde el token y busca la información' })
+  public async getMe(@Req() request: any): Promise<any> {
+    return request['user'];
   }
 
   @Get('register')

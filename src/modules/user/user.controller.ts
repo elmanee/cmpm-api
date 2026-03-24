@@ -3,15 +3,15 @@ import {
   Body, Param, ParseIntPipe, HttpException,
   HttpStatus, HttpCode, Req, UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { UtilService } from 'src/common/services/util.service';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 
+@ApiBearerAuth()
 @ApiTags('users')
-@UseGuards(AuthGuard)
 @Controller('/api/user')
 export class UserController {
   constructor(
@@ -20,6 +20,7 @@ export class UserController {
   ) {}
 
   @Get()
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Obtiene todos los usuarios excepto el actual' })
   public async getUsers(@Req() request: any): Promise<any[]> {
     const { id } = request['user'];
@@ -27,6 +28,7 @@ export class UserController {
   }
 
   @Get(':id')
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Obtiene un usuario por ID' })
   public async getUserById(@Param('id', ParseIntPipe) id: number): Promise<any> {
     const user = await this.userSvc.getUserById(id);
@@ -47,6 +49,7 @@ export class UserController {
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Actualiza un usuario existente' })
   public async updateUser(
     @Param('id', ParseIntPipe) id: number,
@@ -62,6 +65,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Elimina un usuario por ID' })
   public async deleteUser(@Param('id', ParseIntPipe) id: number): Promise<boolean> {

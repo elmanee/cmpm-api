@@ -1,28 +1,35 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class UtilService {
-  async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt(10);
-    return await bcrypt.hash(password, salt);
+  constructor(private readonly jwtSvc: JwtService) {}
+
+  public async hash(text: string): Promise<string> {
+    return await bcrypt.hash(text, 10);
   }
 
-  async comparePassword(password: string, hash: string): Promise<boolean> {
-    return await bcrypt.compare(password, hash);
+  public async checkPassword(
+    password: string,
+    encryptedPassword: string,
+  ): Promise<boolean> {
+    return await bcrypt.compare(password, encryptedPassword);
   }
 
-  async checkPassword(password: string, hash: string): Promise<boolean> {
-    return await bcrypt.compare(password, hash);
+  public async generarJWT(
+    payload: any,
+    expiresIn: any = '60s',
+  ): Promise<string> {
+    return await this.jwtSvc.signAsync(payload, {
+      secret: process.env.JWT_SECRET_KEY,
+      expiresIn: expiresIn,
+    });
   }
 
-  async generarJWT(payload: any): Promise<string> {
-    return jwt.sign(payload, process.env.JWT_SECRET_KEY!, { expiresIn: '60s' });
-  }
-
-  getPayload(token: string): any {
-    const jwt = require('jsonwebtoken');
-    return jwt.verify(token, process.env.JWT_SECRET_KEY!);
+  public async getPlayload(jwt: string): Promise<any> {
+    return await this.jwtSvc.verifyAsync(jwt, {
+      secret: process.env.JWT_SECRET_KEY,
+    });
   }
 }

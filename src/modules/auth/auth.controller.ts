@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthDto } from './dto/auth.dto';
 import { UtilService } from 'src/common/services/util.service';
 import { AuthGuard } from 'src/common/guards/auth.guard';
+import { AppException } from 'src/common/exceptions/app.exception';
 
 @Controller('/api/auth')
 export class AuthController {
@@ -23,8 +24,13 @@ export class AuthController {
     }
     if (await this.utilSvc.checkPassword(password, user.password!)) {
       const { password: _, ...payload } = user;
-      const jwt = await this.utilSvc.generarJWT(payload);
-      return { access_token: jwt, refresh_token: '' };
+
+      const refresh = await this.utilSvc.generarJWT(payload, '7d');
+      const hashRT = await this.utilSvc.hash(refresh);
+      await this.authSvc.updateHash(payload.id, hashRT);
+      payload.hash = hashRT;
+      const jwt = await this.utilSvc.generarJWT(payload, '1h');
+      return { access_token: jwt, refresh_token: hashRT };
     } else {
       throw new Error('El usuario y/o contraseña es incorrecto');
     }
@@ -47,15 +53,41 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Recibe un Refresh Token y entrega un nuevo Access Token' })
-  public refreshToken(): string {
-    return this.authSvc.refreshToken();
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'Recibe un Refresh Token, valida que no hay expirado y entrga un nuevo Access Token',
+  })
+  public async refreshToken(@Req() request: any) {
+    // TODO: Obtener el usuario en sesión
+    const userSession = request['user'];
+    const user = await this.authSvc.getUserById(userSession.id);
+
+    if (!user || !user.hash)
+      throw new AppException('Acceso denegado', HttpStatus.FORBIDDEN, '0');
+
+    // TODO: Comparar el token recibido con el token guardado
+    if (userSession.hash != user.hash)
+      throw new AppException('Token inválido', HttpStatus.FORBIDDEN, '0');
+
+    // TODO: Si el Token es valido se generan nuevos tokens
+    return {
+      token: '',
+      refresh_token: '',
+    };
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Invalida los tokens y limpia las cookies' })
-  public logOut(): string {
-    return this.authSvc.logOut();
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Invalida los tokens en el lado del servidor y limpia las cookies',
+  })
+  public async logout(@Req() request: any) {
+    const session = request['user'];
+    const user = await this.authSvc.updateHash(session.id, null);
+    return user;
   }
 }

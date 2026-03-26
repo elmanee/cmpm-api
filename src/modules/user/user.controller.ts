@@ -21,9 +21,10 @@ export class UserController {
 
   @Get()
   @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Obtiene todos los usuarios excepto el actual' })
+  @ApiOperation({ summary: 'Obtiene todos los usuarios' })
   public async getUsers(@Req() request: any): Promise<any[]> {
     const { id } = request['user'];
+    console.log('Usuario en sesión:', id);
     return await this.userSvc.getuser(id);
   }
 
@@ -43,7 +44,10 @@ export class UserController {
     if (userByUsername) {
       throw new HttpException('El nombre de usuario ya existe', HttpStatus.CONFLICT);
     }
-    const encryptedPassword = await this.utilSvc.hashPassword(user.password);
+    if (!user.password) {
+      throw new Error('La contraseña es requerida');
+    }
+    const encryptedPassword = await this.utilSvc.hash(user.password);
     user.password = encryptedPassword;
     return await this.userSvc.insertUser(user);
   }

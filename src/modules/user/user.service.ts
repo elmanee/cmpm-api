@@ -40,9 +40,18 @@ export class UserService {
   }
 
   public async insertUser(user: CreateUserDto): Promise<any> {
-    return await this.prisma.user.create({
-      data: user,
+    const newUser = await this.prisma.user.create({
+      data: user as any,
+      select: {
+        id: true,
+        name: true,
+        lastname: true,
+        username: true,
+        password: false,
+        hash: false,
+      },
     });
+    return newUser;
   }
 
   public async updateUser(id: number, userUpdated: UpdateUserDto): Promise<any> {

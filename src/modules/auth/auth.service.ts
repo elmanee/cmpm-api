@@ -6,9 +6,23 @@ import { User } from '../user/entities/user.entity';
 export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
-  public async getUserByUsername(username: string): Promise<any> {
-    const result = await this.prisma.$queryRaw`SELECT * FROM "User" WHERE username = ${username} LIMIT 1`;
-    return (result as any[])[0] ?? null;
+  public async getUserByUsername(username: string): Promise<User | null> {
+    return await this.prisma.user.findFirst({
+      where: { username },
+    });
+  }
+
+  public async getUserById(id: number): Promise<User | null> {
+    return await this.prisma.user.findFirst({
+      where: { id },
+    });
+  }
+
+  public async updateHash(user_id: number, hash: string | null): Promise<User> {
+    return await this.prisma.user.update({
+      where: { id: user_id },
+      data: { hash },
+    });
   }
 
   public logIn(): string {

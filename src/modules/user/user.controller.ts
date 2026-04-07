@@ -10,7 +10,6 @@ import { UpdateUserDto } from './dto/update.user.dto';
 import { UtilService } from 'src/common/services/util.service';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 
-@ApiBearerAuth()
 @ApiTags('users')
 @Controller('/api/user')
 export class UserController {
@@ -53,19 +52,35 @@ export class UserController {
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Actualiza un usuario existente' })
   public async updateUser(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() user: UpdateUserDto,
+    @Param('id', ParseIntPipe) id: number, 
+    @Body() user: UpdateUserDto
   ): Promise<any> {
-    return this.userSvc.updateUser(id, user).then((updated) => {
-      if (updated) return updated;
-      throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
-    }).catch((error) => {
-      console.log(error);
-      throw new HttpException('Error al actualizar el usuario', HttpStatus.INTERNAL_SERVER_ERROR);
-    });
+    try {
+      if (user.password) {
+        user.password = await this.utilSvc.hash(user.password);
+      }
+
+      const updatedUser = await this.userSvc.updateUser(id, user);
+
+      if (!updatedUser) {
+        throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+      }
+
+      return updatedUser;
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      console.error('Error interno:', error);
+      throw new HttpException(
+        'Ocurrió un error interno en el servidor', 
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   @Delete(':id')

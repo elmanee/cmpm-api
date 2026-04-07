@@ -9,7 +9,6 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 
-@ApiBearerAuth()
 @ApiTags('tasks')
 @UseGuards(AuthGuard)
 @Controller('/api/task')

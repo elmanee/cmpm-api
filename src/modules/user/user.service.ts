@@ -15,9 +15,9 @@ export class UserService {
   public async getuser(id: number): Promise<any[]> {
     return await (this.prisma as any).user.findMany({
       orderBy: { id: 'asc' },
-      where: {
-        id: { not: id },
-      },
+      // where: {
+      //   id: { not: id },
+      // },
     });
   }
 
@@ -56,12 +56,13 @@ export class UserService {
 
   public async updateUser(id: number, userUpdated: UpdateUserDto): Promise<any> {
     try {
-      return await this.prisma.user.update({
+      const user = await this.prisma.user.update({
         where: { id },
         data: userUpdated,
       });
+      return user;
     } catch (error) {
-      console.log(error);
+      console.error("Error en Prisma Update:", error.message);
       return null;
     }
   }
